@@ -1,0 +1,7 @@
+services:
+  sparkmon:
+    build: .
+    container_name: sparkmon
+    ports:
+      - "8095:80"
+    restart: unless-stopped
