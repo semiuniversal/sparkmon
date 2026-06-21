@@ -23,11 +23,11 @@ export function ThrottleAlert({ throttling }: ThrottleAlertProps) {
             width: 10,
             height: 10,
             borderRadius: "50%",
-            background: "var(--mantine-color-teal-5)",
-            boxShadow: "0 0 6px var(--mantine-color-teal-5)",
+            background: "var(--mantine-color-neonGreen-4)",
+            boxShadow: "0 0 8px var(--mantine-color-neonGreen-4)",
           }}
         />
-        <Text size="sm" c="teal">
+        <Text size="sm" c="neonGreen.4">
           No Throttling
         </Text>
       </Group>

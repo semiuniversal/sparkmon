@@ -102,7 +102,7 @@ export function MachinePanel({
         <Group gap="xs">
           {hasGpu && (
             <Badge
-              color={gpu.status === "active" ? "teal" : "gray"}
+              color={gpu.status === "active" ? "neonGreen" : "gray"}
               variant="light"
             >
               {gpu.status}

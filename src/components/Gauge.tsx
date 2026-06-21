@@ -18,7 +18,7 @@ function getColor(
   const pct = (value / max) * 100;
   if (pct >= thresholds.crit) return "red";
   if (pct >= thresholds.warn) return "yellow";
-  return "teal";
+  return "neonGreen";
 }
 
 export function Gauge({ value, max, label, unit, thresholds, size = 100 }: GaugeProps) {

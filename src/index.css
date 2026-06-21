@@ -19,9 +19,9 @@ body {
 }
 
 .json-key { color: var(--mantine-color-blue-4); }
-.json-str { color: var(--mantine-color-teal-4); }
+.json-str { color: var(--mantine-color-neonGreen-4); }
 .json-num { color: var(--mantine-color-yellow-4); }
-.json-bool.true { color: var(--mantine-color-teal-4); }
+.json-bool.true { color: var(--mantine-color-neonGreen-4); }
 .json-bool.false { color: var(--mantine-color-red-4); }
 .json-null { color: var(--mantine-color-dimmed); font-style: italic; }
 .json-idx { color: var(--mantine-color-dimmed); font-size: 0.7rem; }
