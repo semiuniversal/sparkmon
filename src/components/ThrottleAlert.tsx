@@ -1,3 +1,4 @@
+import { Alert, List, Group, Text } from "@mantine/core";
 import type { GPUThrottling } from "../types";
 
 interface ThrottleAlertProps {
@@ -16,24 +17,40 @@ const REASON_LABELS: Record<string, string> = {
 export function ThrottleAlert({ throttling }: ThrottleAlertProps) {
   if (!throttling.is_throttled) {
     return (
-      <div className="throttle-ok">
-        <span className="throttle-dot ok" />
-        No Throttling
-      </div>
+      <Group gap="xs" p="xs">
+        <div
+          style={{
+            width: 10,
+            height: 10,
+            borderRadius: "50%",
+            background: "var(--mantine-color-teal-5)",
+            boxShadow: "0 0 6px var(--mantine-color-teal-5)",
+          }}
+        />
+        <Text size="sm" c="teal">
+          No Throttling
+        </Text>
+      </Group>
     );
   }
 
   return (
-    <div className="throttle-alert">
-      <span className="throttle-dot crit" />
-      <div>
-        <strong>THROTTLED</strong>
-        <ul className="throttle-reasons">
-          {throttling.bottlenecks.map((b) => (
-            <li key={b}>{REASON_LABELS[b] || b}</li>
-          ))}
-        </ul>
-      </div>
-    </div>
+    <Alert
+      color="red"
+      variant="light"
+      title="THROTTLED"
+      styles={{
+        root: {
+          borderLeft: "4px solid var(--mantine-color-red-6)",
+          animation: "pulse 1.5s ease-in-out infinite",
+        },
+      }}
+    >
+      <List size="sm" spacing={2}>
+        {throttling.bottlenecks.map((b) => (
+          <List.Item key={b}>{REASON_LABELS[b] || b}</List.Item>
+        ))}
+      </List>
+    </Alert>
   );
 }

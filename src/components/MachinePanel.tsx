@@ -1,4 +1,15 @@
 import { useState } from "react";
+import {
+  Card,
+  Group,
+  Stack,
+  Text,
+  Badge,
+  Button,
+  Divider,
+  Loader,
+  Center,
+} from "@mantine/core";
 import type { GPUResponse, MachineConfig } from "../types";
 import type { ConnectionState } from "../hooks/useGpuStream";
 import { Gauge } from "./Gauge";
@@ -19,32 +30,53 @@ function formatBytes(bytesPerSec: number): string {
   return `${Math.round(bytesPerSec)} B/s`;
 }
 
-export function MachinePanel({ config, data, connectionState }: MachinePanelProps) {
-  const [showDetail, setShowDetail] = useState(false);
+export function MachinePanel({
+  config,
+  data,
+  connectionState,
+}: MachinePanelProps) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   if (connectionState === "connecting" && !data) {
     return (
-      <div className="panel">
-        <div className="panel-header">
-          <h2>{config.name}</h2>
-          <span className="conn-badge connecting">Connecting...</span>
-        </div>
-        <div className="panel-placeholder">Waiting for data stream...</div>
-      </div>
+      <Card withBorder padding="lg" radius="md">
+        <Group justify="space-between" mb="md">
+          <Text fw={600} size="lg">
+            {config.name}
+          </Text>
+          <Badge color="blue" variant="light">
+            Connecting
+          </Badge>
+        </Group>
+        <Center py="xl">
+          <Stack align="center" gap="sm">
+            <Loader size="sm" />
+            <Text c="dimmed" size="sm">
+              Waiting for data stream...
+            </Text>
+          </Stack>
+        </Center>
+      </Card>
     );
   }
 
   if (connectionState === "disconnected" && !data) {
     return (
-      <div className="panel">
-        <div className="panel-header">
-          <h2>{config.name}</h2>
-          <span className="conn-badge disconnected">Disconnected</span>
-        </div>
-        <div className="panel-placeholder">
-          Cannot reach {config.url}
-        </div>
-      </div>
+      <Card withBorder padding="lg" radius="md">
+        <Group justify="space-between" mb="md">
+          <Text fw={600} size="lg">
+            {config.name}
+          </Text>
+          <Badge color="red" variant="light">
+            Disconnected
+          </Badge>
+        </Group>
+        <Center py="xl">
+          <Text c="dimmed" size="sm">
+            Cannot reach {config.url}
+          </Text>
+        </Center>
+      </Card>
     );
   }
 
@@ -55,37 +87,51 @@ export function MachinePanel({ config, data, connectionState }: MachinePanelProp
   const hasGpu = !!gpu;
 
   return (
-    <div className="panel">
-      <div className="panel-header">
+    <Card withBorder padding="lg" radius="md">
+      {/* Header */}
+      <Group justify="space-between" mb="sm" wrap="nowrap">
         <div>
-          <h2>{config.name}</h2>
-          <span className="panel-subtitle">
+          <Text fw={600} size="lg">
+            {config.name}
+          </Text>
+          <Text size="xs" c="dimmed">
             {hasGpu ? gpu.name : "No GPU"} &middot; {sys.hostname}
             {config.model && <> &middot; {config.model}</>}
-          </span>
+          </Text>
         </div>
-        <div className="panel-header-right">
+        <Group gap="xs">
           {hasGpu && (
-            <span className={`status-badge ${gpu.status}`}>
+            <Badge
+              color={gpu.status === "active" ? "teal" : "gray"}
+              variant="light"
+            >
               {gpu.status}
-            </span>
+            </Badge>
           )}
           {connectionState === "disconnected" && (
-            <span className="conn-badge disconnected">Stale</span>
+            <Badge color="red" variant="light">
+              Stale
+            </Badge>
           )}
-          <button className="detail-btn" onClick={() => setShowDetail(true)}>
+          <Button
+            variant="subtle"
+            size="compact-xs"
+            onClick={() => setDrawerOpen(true)}
+          >
             All Data
-          </button>
-        </div>
-      </div>
+          </Button>
+        </Group>
+      </Group>
 
       {hasGpu && (
         <>
-          {/* Throttle alert — most prominent */}
+          {/* Throttle alert */}
           <ThrottleAlert throttling={gpu.throttling} />
 
+          <Divider my="xs" />
+
           {/* Primary gauges */}
-          <div className="gauge-row">
+          <Group justify="space-around" py="xs">
             <Gauge
               value={gpu.temperature_celsius}
               max={100}
@@ -95,7 +141,11 @@ export function MachinePanel({ config, data, connectionState }: MachinePanelProp
             />
             <Gauge
               value={gpu.power.usage_watts}
-              max={gpu.power.limit_watts > 0 ? gpu.power.limit_watts / 1000 : 100}
+              max={
+                gpu.power.limit_watts > 0
+                  ? gpu.power.limit_watts / 1000
+                  : 100
+              }
               label="Power"
               unit="W"
               thresholds={{ warn: 70, crit: 90 }}
@@ -107,11 +157,25 @@ export function MachinePanel({ config, data, connectionState }: MachinePanelProp
               unit="%"
               thresholds={{ warn: 80, crit: 95 }}
             />
-          </div>
+          </Group>
+
+          <Divider my="xs" />
 
           {/* Secondary GPU stats */}
-          <div className="stats-section">
-            <h3>GPU</h3>
+          <Stack gap={6}>
+            <Text
+              size="xs"
+              c="dimmed"
+              tt="uppercase"
+              fw={600}
+              lts="0.8px"
+              pb={2}
+              style={{
+                borderBottom: "1px solid var(--mantine-color-dark-4)",
+              }}
+            >
+              GPU
+            </Text>
             <StatRow
               label="VRAM Used"
               value={
@@ -135,10 +199,7 @@ export function MachinePanel({ config, data, connectionState }: MachinePanelProp
             {gpu.fan_speed_rpm > 0 && (
               <StatRow label="Fan" value={gpu.fan_speed_rpm} unit="RPM" />
             )}
-            <StatRow
-              label="Perf State"
-              value={`P${gpu.performance_state}`}
-            />
+            <StatRow label="Perf State" value={`P${gpu.performance_state}`} />
             {gpu.power.budget_watts > 0 && (
               <StatRow
                 label="Power Budget"
@@ -146,16 +207,30 @@ export function MachinePanel({ config, data, connectionState }: MachinePanelProp
                 unit="W"
               />
             )}
-          </div>
+          </Stack>
 
           {/* GPU processes */}
           <ProcessTable processes={gpu.top_processes} title="GPU Processes" />
         </>
       )}
 
+      <Divider my="xs" />
+
       {/* System stats */}
-      <div className="stats-section">
-        <h3>System</h3>
+      <Stack gap={6}>
+        <Text
+          size="xs"
+          c="dimmed"
+          tt="uppercase"
+          fw={600}
+          lts="0.8px"
+          pb={2}
+          style={{
+            borderBottom: "1px solid var(--mantine-color-dark-4)",
+          }}
+        >
+          System
+        </Text>
         <StatRow
           label="CPU"
           value={sys.cpu.cpu_percent}
@@ -189,12 +264,8 @@ export function MachinePanel({ config, data, connectionState }: MachinePanelProp
           label="Disk I/O"
           value={`R:${formatBytes(sys.disk_io.read_bytes_per_sec)} W:${formatBytes(sys.disk_io.write_bytes_per_sec)}`}
         />
-        <StatRow
-          label="Host Temp"
-          value={sys.temperature_celsius}
-          unit="°C"
-        />
-      </div>
+        <StatRow label="Host Temp" value={sys.temperature_celsius} unit="°C" />
+      </Stack>
 
       {/* System process table */}
       <ProcessTable
@@ -205,13 +276,12 @@ export function MachinePanel({ config, data, connectionState }: MachinePanelProp
         title="Top System Processes"
       />
 
-      {showDetail && (
-        <DetailDrawer
-          data={data}
-          machineName={config.name}
-          onClose={() => setShowDetail(false)}
-        />
-      )}
-    </div>
+      <DetailDrawer
+        data={data}
+        machineName={config.name}
+        opened={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+      />
+    </Card>
   );
 }
