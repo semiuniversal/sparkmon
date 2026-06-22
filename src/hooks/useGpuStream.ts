@@ -21,7 +21,14 @@ export function useGpuStream(url: string) {
   }, []);
 
   useEffect(() => {
-    const es = new EventSource(url);
+    let es: EventSource;
+    try {
+      es = new EventSource(url);
+    } catch (err) {
+      console.error("EventSource constructor failed:", err);
+      setConnectionState("disconnected");
+      return;
+    }
     esRef.current = es;
     setConnectionState("connecting");
 
@@ -33,6 +40,9 @@ export function useGpuStream(url: string) {
     es.onmessage = (event) => {
       try {
         const parsed: GPUResponse = JSON.parse(event.data);
+        if (parsed.status === "error" || !parsed.gpus || !parsed.system_info) {
+          return;
+        }
         setData(parsed);
         setConnectionState("connected");
         setLastUpdate(Date.now());

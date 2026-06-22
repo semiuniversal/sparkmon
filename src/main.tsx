@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+import { Component, StrictMode, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import {
   MantineProvider,
@@ -8,6 +8,38 @@ import {
 import "@mantine/core/styles.css";
 import "./index.css";
 import App from "./App";
+
+class ErrorBoundary extends Component<
+  { children: ReactNode },
+  { error: Error | null }
+> {
+  state: { error: Error | null } = { error: null };
+
+  static getDerivedStateFromError(error: Error) {
+    return { error };
+  }
+
+  componentDidCatch(error: Error) {
+    console.error("React ErrorBoundary caught:", error);
+  }
+
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ padding: 40, color: "#ff6b6b", fontFamily: "monospace" }}>
+          <h2>SparkMon crashed</h2>
+          <pre style={{ whiteSpace: "pre-wrap" }}>
+            {this.state.error.message}
+            {"\n\n"}
+            {this.state.error.stack}
+          </pre>
+          <button onClick={() => this.setState({ error: null })}>Retry</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 const neonGreen: MantineColorsTuple = [
   "#e6ffe6",
@@ -35,8 +67,10 @@ const theme = createTheme({
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <MantineProvider theme={theme} defaultColorScheme="dark">
-      <App />
-    </MantineProvider>
+    <ErrorBoundary>
+      <MantineProvider theme={theme} defaultColorScheme="dark">
+        <App />
+      </MantineProvider>
+    </ErrorBoundary>
   </StrictMode>
 );

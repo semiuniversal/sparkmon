@@ -80,7 +80,7 @@ export function MachinePanel({
     );
   }
 
-  if (!data) return null;
+  if (!data || !data.gpus || !data.system_info) return null;
 
   const gpu = data.gpus[0];
   const sys = data.system_info;
@@ -126,7 +126,11 @@ export function MachinePanel({
       {hasGpu && (
         <>
           {/* Throttle alert */}
-          <ThrottleAlert throttling={gpu.throttling} />
+          <ThrottleAlert
+            throttling={gpu.throttling}
+            gpuUtilPercent={gpu.utilization.gpu_percent}
+            graphicsMhz={gpu.clocks.graphics_mhz}
+          />
 
           <Divider my="xs" />
 
@@ -237,7 +241,7 @@ export function MachinePanel({
           unit="%"
           bar={{ value: sys.cpu.cpu_percent, max: 100 }}
         />
-        {sys.cpu.cpu_per_core_percent.length > 0 && (
+        {sys.cpu.cpu_per_core_percent?.length > 0 && (
           <div className="core-bars">
             {sys.cpu.cpu_per_core_percent.map((pct, i) => (
               <div

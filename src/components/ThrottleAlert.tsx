@@ -1,9 +1,8 @@
 import { Alert, List, Group, Text } from "@mantine/core";
 import type { GPUThrottling } from "../types";
 
-interface ThrottleAlertProps {
-  throttling: GPUThrottling;
-}
+const MIN_UTIL_FOR_THROTTLE = 20;
+const MAX_CLOCK_MHZ_FOR_THROTTLE_ALERT = 1400;
 
 const REASON_LABELS: Record<string, string> = {
   thermal_throttling: "Thermal Throttling",
@@ -14,8 +13,30 @@ const REASON_LABELS: Record<string, string> = {
   pcie_bandwidth_saturated: "PCIe Bandwidth Saturated",
 };
 
-export function ThrottleAlert({ throttling }: ThrottleAlertProps) {
-  if (!throttling.is_throttled) {
+export function isRealGpuThrottle(
+  throttling: GPUThrottling,
+  gpuUtilPercent: number,
+  graphicsMhz: number
+): boolean {
+  return (
+    throttling.is_throttled &&
+    gpuUtilPercent > MIN_UTIL_FOR_THROTTLE &&
+    graphicsMhz < MAX_CLOCK_MHZ_FOR_THROTTLE_ALERT
+  );
+}
+
+interface ThrottleAlertProps {
+  throttling: GPUThrottling;
+  gpuUtilPercent: number;
+  graphicsMhz: number;
+}
+
+export function ThrottleAlert({
+  throttling,
+  gpuUtilPercent,
+  graphicsMhz,
+}: ThrottleAlertProps) {
+  if (!isRealGpuThrottle(throttling, gpuUtilPercent, graphicsMhz)) {
     return (
       <Group gap="xs" p="xs">
         <div
