@@ -81,6 +81,16 @@ export const MACHINES: MachineConfig[] = [
 ];
 ```
 
+## MCP (agent monitoring)
+
+An HTTP [MCP server](docs/mcp.md) exposes fleet monitoring tools for agents (Cursor, etc.) over Streamable HTTP. Tools include fleet health checks, per-machine metrics, throttle analysis, GPU process listing, and utilization comparison.
+
+```bash
+cd mcp && npm install && npm run build && npm start
+```
+
+Or deploy the `mcp/Dockerfile` container (default port **8096**). See [docs/mcp.md](docs/mcp.md) for tool descriptions and Cursor configuration.
+
 ## CORS
 
 The `gpu-metrics-api` instances already set `allow_origins=["*"]`, so cross-origin SSE connections work without proxying.

@@ -5,3 +5,10 @@ services:
     ports:
       - "8095:80"
     restart: unless-stopped
+
+  sparkmon-mcp:
+    build: ./mcp
+    container_name: sparkmon-mcp
+    ports:
+      - "8097:8096"
+    restart: unless-stopped
