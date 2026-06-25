@@ -44,12 +44,33 @@ Replace the host/port with wherever the MCP container runs on your network.
 
 ## Configuration
 
+### Stack / Portainer environment
+
+Set these on the stack when deploying from GitHub:
+
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PORT` | `8096` | HTTP listen port |
-| `HOST` | `0.0.0.0` | Bind address |
+| `SPARKMON_MCP_HOST_PORT` | `8098` | Host port published to the LAN (left side of `host:container`) |
+| `SPARKMON_MCP_PORT` | `8096` | Container listen port (must match `PORT` inside the container) |
+| `SPARKMON_MCP_HOST` | `0.0.0.0` | Bind address inside the container |
 | `SPARKMON_MACHINES_JSON` | built-in fleet | JSON array of `{ id, name, url, model? }` |
 | `SPARKMON_FETCH_TIMEOUT_MS` | `8000` | Per-host metrics fetch timeout |
+
+Example Portainer stack env if 8098 is also taken:
+
+```
+SPARKMON_MCP_HOST_PORT=8100
+SPARKMON_MCP_PORT=8096
+```
+
+Cursor MCP URL would then use port **8100**.
+
+### Container runtime
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `8096` | HTTP listen port inside the container (set automatically from `SPARKMON_MCP_PORT` in compose) |
+| `HOST` | `0.0.0.0` | Bind address |
 
 Example custom fleet:
 

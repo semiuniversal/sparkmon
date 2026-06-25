@@ -10,5 +10,10 @@ services:
     build: ./mcp
     container_name: sparkmon-mcp
     ports:
-      - "8098:8096"
+      - "${SPARKMON_MCP_HOST_PORT:-8098}:${SPARKMON_MCP_PORT:-8096}"
+    environment:
+      PORT: ${SPARKMON_MCP_PORT:-8096}
+      HOST: ${SPARKMON_MCP_HOST:-0.0.0.0}
+      SPARKMON_MACHINES_JSON: ${SPARKMON_MACHINES_JSON:-}
+      SPARKMON_FETCH_TIMEOUT_MS: ${SPARKMON_FETCH_TIMEOUT_MS:-8000}
     restart: unless-stopped
