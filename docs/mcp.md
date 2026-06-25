@@ -23,7 +23,7 @@ Default listen address: `http://0.0.0.0:8096`
 ```bash
 cd mcp
 docker build -t sparkmon-mcp:latest .
-docker run -d --name sparkmon-mcp --restart unless-stopped -p 8097:8096 sparkmon-mcp:latest
+docker run -d --name sparkmon-mcp --restart unless-stopped -p 8098:8096 sparkmon-mcp:latest
 ```
 
 ## Cursor configuration
@@ -34,7 +34,7 @@ Add to your MCP settings (`.cursor/mcp.json` or Cursor Settings → MCP):
 {
   "mcpServers": {
     "sparkmon-fleet": {
-      "url": "http://192.168.4.139:8097/mcp"
+      "url": "http://192.168.4.139:8098/mcp"
     }
   }
 }
