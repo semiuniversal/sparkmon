@@ -6,6 +6,7 @@ import {
   fetchAllMachineMetrics,
   fetchMachineMetrics,
   listGpuProcesses,
+  runMachinePdWedgeTest,
   summarizeFleet,
   summarizeMachine,
   utilizationComparison,
@@ -215,6 +216,32 @@ export function createSparkmonMcpServer(): McpServer {
       return textResult({
         machines: utilizationComparison(results),
       });
+    }
+  );
+
+  server.registerTool(
+    "check_machine_pd_wedge",
+    {
+      title: "Check Machine PD Wedge",
+      description:
+        "Run the definitive PD (power distribution) wedge test on one inference host. Samples GPU metrics 20 times at 0.5s intervals while the GPU should be under inference load. Flags PD wedge when utilization > 90%, power < 20W, and graphics clock variance is near zero — the signature of a defective PD unit where the GPU reports high load but power and clock stay flat and low (~611 MHz). Distinct from NVML throttle flags. Requires an active workload during the ~10s test window.",
+      inputSchema: z.object({
+        machine_id: z
+          .string()
+          .describe(
+            "Fleet machine identifier. Use list_fleet_machines for valid values."
+          ),
+      }),
+      annotations: {
+        readOnlyHint: true,
+        destructiveHint: false,
+        idempotentHint: false,
+        openWorldHint: true,
+      },
+    },
+    async ({ machine_id }): Promise<CallToolResult> => {
+      const result = await runMachinePdWedgeTest(machine_id);
+      return textResult(result);
     }
   );
 

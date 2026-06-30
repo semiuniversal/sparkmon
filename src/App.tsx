@@ -8,6 +8,8 @@ import {
 } from "@mantine/core";
 import { MachinePanel } from "./components/MachinePanel";
 import { useGpuStream } from "./hooks/useGpuStream";
+import { usePdWedgeDetector } from "./hooks/usePdWedgeDetector";
+import { useClockHistory } from "./hooks/useClockHistory";
 import { MACHINES, STREAM_INTERVAL } from "./config";
 
 function MachinePanelWrapper({
@@ -18,11 +20,17 @@ function MachinePanelWrapper({
   const { data, connectionState } = useGpuStream(
     `${config.url}/gpu/stream?interval=${STREAM_INTERVAL}`
   );
+  const gpu = data?.gpus?.[0] ?? null;
+  const pdWedgeAnalysis = usePdWedgeDetector(gpu);
+  const clockHistory = useClockHistory(gpu);
+
   return (
     <MachinePanel
       config={config}
       data={data}
       connectionState={connectionState}
+      pdWedgeAnalysis={pdWedgeAnalysis}
+      clockHistory={clockHistory}
     />
   );
 }

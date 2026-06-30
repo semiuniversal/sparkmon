@@ -1,4 +1,12 @@
 import { FETCH_TIMEOUT_MS, getMachineById, getMachines } from "./config.js";
+import {
+  analyzePdWedge,
+  extractPdWedgeSample,
+  PD_WEDGE_SAMPLE_INTERVAL_MS,
+  PD_WEDGE_SAMPLE_SIZE,
+  type PdWedgeAnalysis,
+  type PdWedgeSample,
+} from "./pdWedge.js";
 import { analyzeThrottle } from "./throttle.js";
 import type {
   GPUResponse,
@@ -172,4 +180,51 @@ export function utilizationComparison(results: MachineMetricsResult[]) {
       inference_active: gpu?.status === "active",
     };
   });
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function runMachinePdWedgeTest(machineId: string): Promise<{
+  machine_id: string;
+  name: string;
+  samples: PdWedgeSample[];
+  analysis: PdWedgeAnalysis;
+  error?: string;
+}> {
+  const machine = getMachineById(machineId);
+  if (!machine) {
+    throw new Error(
+      `Unknown machine_id "${machineId}". Use list_fleet_machines to see valid IDs.`
+    );
+  }
+
+  const samples: PdWedgeSample[] = [];
+
+  for (let i = 0; i < PD_WEDGE_SAMPLE_SIZE; i++) {
+    const result = await fetchGpuMetrics(machine);
+    if (!result.reachable || result.error || !result.metrics?.gpus?.[0]) {
+      return {
+        machine_id: machine.id,
+        name: machine.name,
+        samples,
+        analysis: analyzePdWedge(samples),
+        error: result.error ?? "Failed to fetch GPU metrics during PD wedge test",
+      };
+    }
+
+    samples.push(extractPdWedgeSample(result.metrics.gpus[0]));
+
+    if (i < PD_WEDGE_SAMPLE_SIZE - 1) {
+      await sleep(PD_WEDGE_SAMPLE_INTERVAL_MS);
+    }
+  }
+
+  return {
+    machine_id: machine.id,
+    name: machine.name,
+    samples,
+    analysis: analyzePdWedge(samples),
+  };
 }

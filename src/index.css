@@ -2,6 +2,36 @@ body {
   min-height: 100vh;
 }
 
+.clock-sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 32px;
+}
+
+.clock-sparkline-bar {
+  flex: 1;
+  min-width: 2px;
+  background: var(--mantine-color-blue-5);
+  border-radius: 1px 1px 0 0;
+  opacity: 0.85;
+  transition: height 0.3s ease;
+}
+
+.clock-metric {
+  padding: 4px 0 2px;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.65;
+  }
+}
+
 .core-bars {
   display: flex;
   align-items: flex-end;

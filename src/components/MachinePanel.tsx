@@ -12,8 +12,11 @@ import {
 } from "@mantine/core";
 import type { GPUResponse, MachineConfig } from "../types";
 import type { ConnectionState } from "../hooks/useGpuStream";
+import type { PdWedgeAnalysis } from "../lib/pdWedge";
 import { Gauge } from "./Gauge";
 import { ThrottleAlert } from "./ThrottleAlert";
+import { PdWedgeAlert } from "./PdWedgeAlert";
+import { ClockMetric } from "./ClockMetric";
 import { StatRow } from "./StatRow";
 import { ProcessTable } from "./ProcessTable";
 import { DetailDrawer } from "./DetailDrawer";
@@ -22,6 +25,8 @@ interface MachinePanelProps {
   config: MachineConfig;
   data: GPUResponse | null;
   connectionState: ConnectionState;
+  pdWedgeAnalysis: PdWedgeAnalysis;
+  clockHistory: { currentMhz: number | null; history: number[] };
 }
 
 function formatBytes(bytesPerSec: number): string {
@@ -34,6 +39,8 @@ export function MachinePanel({
   config,
   data,
   connectionState,
+  pdWedgeAnalysis,
+  clockHistory,
 }: MachinePanelProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -132,6 +139,8 @@ export function MachinePanel({
             graphicsMhz={gpu.clocks.graphics_mhz}
           />
 
+          <PdWedgeAlert analysis={pdWedgeAnalysis} />
+
           <Divider my="xs" />
 
           {/* Primary gauges */}
@@ -163,6 +172,11 @@ export function MachinePanel({
             />
           </Group>
 
+          <ClockMetric
+            currentMhz={clockHistory.currentMhz}
+            history={clockHistory.history}
+          />
+
           <Divider my="xs" />
 
           {/* Secondary GPU stats */}
@@ -189,10 +203,15 @@ export function MachinePanel({
               }
               unit={gpu.memory.used_mb >= 1024 ? "GB" : "MB"}
             />
+            <StatRow
+              label="Graphics"
+              value={gpu.clocks.graphics_mhz > 0 ? gpu.clocks.graphics_mhz : "—"}
+              unit={gpu.clocks.graphics_mhz > 0 ? "MHz" : undefined}
+            />
             {gpu.clocks.max_graphics_mhz > 0 && (
               <StatRow
-                label="Clocks"
-                value={`${gpu.clocks.graphics_mhz} / ${gpu.clocks.max_graphics_mhz}`}
+                label="Clock Max"
+                value={gpu.clocks.max_graphics_mhz}
                 unit="MHz"
                 bar={{
                   value: gpu.clocks.graphics_mhz,
